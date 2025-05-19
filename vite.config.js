@@ -8,9 +8,18 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    copy: [
+      {
+        src: 'public/vite.svg',
+        dest: 'dist'
+      }
+    ]
   },
   css: {
     postcss: './postcss.config.js'
+  },
+  mime: {
+    'application/javascript': ['js', 'mjs']
   }
 })
