@@ -5,6 +5,8 @@ import FilterBar from "../components/FilterBar";
 import ComplaintDetail from "../components/ComplaintDetail";
 import ComplaintForm from "../components/ComplaintForm";
 import { FaPlus } from "react-icons/fa";
+import ComplaintDetailModal from './ComplaintDetailModal';
+
 
 export default function Dashboard() {
   const { complaints } = useContext(ComplaintContext);
@@ -85,12 +87,11 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6">
           {filtered.map((complaint) => (
-            <div
-              key={complaint.id}
-              onClick={() => setSelectedComplaint(complaint)}
-              className="cursor-pointer transform hover:scale-102 transition-transform"
-            >
-              <ComplaintCard complaint={complaint} />
+            <div key={complaint.id}>
+              <ComplaintCard
+                complaint={complaint}
+                onClick={(complaint) => setSelectedComplaint(complaint)}
+              />
             </div>
           ))}
         </div>
@@ -114,17 +115,10 @@ export default function Dashboard() {
 
       {/* Complaint Detail Modal */}
       {selectedComplaint && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="relative w-full max-w-4xl mx-4">
-            <button
-              onClick={() => setSelectedComplaint(null)}
-              className="absolute top-4 right-4 z-10 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition-colors"
-            >
-              Close
-            </button>
-            <ComplaintDetail complaint={selectedComplaint} onClose={() => setSelectedComplaint(null)} />
-          </div>
-        </div>
+        <ComplaintDetailModal
+          complaint={selectedComplaint}
+          onClose={() => setSelectedComplaint(null)}
+        />
       )}
     </div>
   );

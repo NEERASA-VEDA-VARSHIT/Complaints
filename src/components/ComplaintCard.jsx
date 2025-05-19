@@ -2,7 +2,7 @@ import { FaComment, FaUserCircle, FaThumbsUp } from "react-icons/fa";
 import { useComplaintContext } from "../context/ComplaintContext";
 import { useNavigate } from "react-router-dom";
 
-export default function ComplaintCard({ complaint }) {
+export default function ComplaintCard({ complaint, onClick }) {
   const { complaints, setComplaints } = useComplaintContext();
   const navigate = useNavigate();
 
@@ -40,9 +40,10 @@ export default function ComplaintCard({ complaint }) {
 
   return (
     <div
-      onClick={() => navigate(`/complaint/${complaint.id}`)}
-      className="bg-gray-900 p-4 rounded-xl shadow hover:shadow-lg transition-all cursor-pointer"
+      onClick={() => onClick(complaint)}
+      className="cursor-pointer transform hover:scale-102 transition-transform"
     >
+      
       <div className="flex justify-between items-center mb-2">
         <span className={`text-xs font-bold text-white px-2 py-1 rounded-full ${statusColors[complaint.status]}`}>
           {complaint.status}

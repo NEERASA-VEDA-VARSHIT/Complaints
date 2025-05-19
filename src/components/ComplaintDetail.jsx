@@ -1,27 +1,110 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { ComplaintContext } from "../context/ComplaintContext";
 import { FaThumbsUp, FaUserCircle, FaEdit, FaSave } from "react-icons/fa";
+import { useLocation } from "react-router-dom";
 
-export default function ComplaintDetail({ complaint: initialComplaint, onClose }) {
+export default function ComplaintDetail({ complaint: propComplaint, onClose }) {
+  console.log("ComplaintDetail received prop:", propComplaint); // Log the prop
+
+  const location = useLocation();
   const { complaints, setComplaints } = useContext(ComplaintContext);
-  const [complaint, setComplaint] = useState(initialComplaint);
+  console.log("ComplaintContext complaints:", complaints); // Log context complaints
+  
+  // Initialize state with the prop directly to avoid null initial state
+  const [complaint, setComplaint] = useState(propComplaint || null);
+  const [isLoading, setIsLoading] = useState(!propComplaint);
   const [isEditing, setIsEditing] = useState(false);
   const [commentInput, setCommentInput] = useState("");
   const [progressNote, setProgressNote] = useState("");
   const [editForm, setEditForm] = useState({
-    status: complaint?.status || "OPEN",
-    department: complaint?.department || "",
-    assignedTo: complaint?.assignedTo || "",
-    level: complaint?.level || "1",
+    status: propComplaint?.status || "OPEN",
+    department: propComplaint?.department || "",
+    assignedTo: propComplaint?.assignedTo || "",
+    level: propComplaint?.level || "1",
   });
 
-  if (!complaint) {
+  // Load complaint data from location state or props
+  useEffect(() => {
+    console.log("useEffect running, location.state:", location.state);
+    console.log("propComplaint in useEffect:", propComplaint);
+    
+    // First try to get complaint from props
+    if (propComplaint) {
+      console.log("Using complaint from props");
+      setComplaint(propComplaint);
+      setEditForm({
+        status: propComplaint.status || "OPEN",
+        department: propComplaint.department || "",
+        assignedTo: propComplaint.assignedTo || "",
+        level: propComplaint.level || "1",
+      });
+      setIsLoading(false); // Set loading to false immediately when we have data
+    } 
+    // Then try from location state
+    else if (location.state?.complaint) {
+      const initialComplaint = location.state.complaint;
+      console.log("Using complaint from location state", initialComplaint);
+      setComplaint(initialComplaint);
+      setEditForm({
+        status: initialComplaint.status || "OPEN",
+        department: initialComplaint.department || "",
+        assignedTo: initialComplaint.assignedTo || "",
+        level: initialComplaint.level || "1",
+      });
+      setIsLoading(false);
+    } 
+    // If neither, check if we can find it in the global context
+    else if (location.state?.complaintId && complaints.length > 0) {
+      const id = location.state.complaintId;
+      console.log("Looking for complaint with ID:", id);
+      const foundComplaint = complaints.find(c => c.id === id);
+      console.log("Found in context:", foundComplaint);
+      
+      if (foundComplaint) {
+        setComplaint(foundComplaint);
+        setEditForm({
+          status: foundComplaint.status || "OPEN",
+          department: foundComplaint.department || "",
+          assignedTo: foundComplaint.assignedTo || "",
+          level: foundComplaint.level || "1",
+        });
+      }
+      setIsLoading(false);
+    } else {
+      // If we get here and still don't have data, stop loading
+      setIsLoading(false);
+    }
+  }, [location.state, propComplaint, complaints]);
+
+  useEffect(() => {
+    console.log("Updated complaint state:", complaint);
+  }, [complaint]);
+
+  // Show loading indicator while fetching data
+  if (isLoading) {
     return (
       <div className="bg-gray-800 text-white rounded-xl shadow-lg p-6 text-center">
         <p>Loading complaint details...</p>
       </div>
     );
   }
+
+  // Show error if complaint data wasn't found
+  if (!complaint) {
+    console.log("No complaint data found, rendering error state");
+    return (
+      <div className="bg-gray-800 text-white rounded-xl shadow-lg p-6 text-center">
+        <p>Complaint data not found</p>
+        <button 
+          onClick={onClose} 
+          className="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
 
   const handleUpvote = () => {
     const updated = complaints.map((c) => {
@@ -35,6 +118,7 @@ export default function ComplaintDetail({ complaint: initialComplaint, onClose }
       }
       return c;
     });
+    console.log(updated); // Add this line to see the updated value
     setComplaints(updated);
     setComplaint(updated.find((c) => c.id === complaint.id));
   };

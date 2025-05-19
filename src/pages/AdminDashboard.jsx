@@ -133,11 +133,11 @@ export default function AdminDashboard() {
 
             <div className="grid gap-4">
               {filtered.map((complaint) => (
-                <div
-                  key={complaint.id}
-                  className="bg-gray-800 p-4 rounded-lg shadow-lg hover:bg-gray-700 transition-colors cursor-pointer"
-                  onClick={() => setSelectedComplaint(complaint)}
-                >
+  <div
+    key={complaint.id}
+    className="bg-gray-800 p-4 rounded-lg shadow-lg hover:bg-gray-700 transition-colors cursor-pointer"
+    onClick={() => setSelectedComplaint(complaint)}
+  >
                   <div className="flex justify-between items-start">
                     <div>
                       <h2 className="text-lg font-semibold">{complaint.title}</h2>
