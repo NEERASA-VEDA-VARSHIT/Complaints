@@ -9,7 +9,7 @@ export default function ComplaintForm() {
     description: "",
     category: categories[0],
     tags: "",
-    authority: "",
+    assignedTo: "",
     urgency: "Medium",
     anonymous: false,
   });
@@ -20,7 +20,7 @@ export default function ComplaintForm() {
     e.preventDefault();
     addComplaint(form);
     alert("Complaint submitted!");
-    setForm({ ...form, title: "", description: "", tags: "", authority: "" });
+    setForm({ ...form, title: "", description: "", tags: "", assignedTo: "" });
   };
 
   return (
@@ -32,7 +32,7 @@ export default function ComplaintForm() {
         {categories.map((c) => <option key={c}>{c}</option>)}
       </select>
       <input className="p-2 border w-full" placeholder="Tags (comma-separated)" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} />
-      <input className="p-2 border w-full" placeholder="Suggested Authority" value={form.authority} onChange={(e) => setForm({ ...form, authority: e.target.value })} />
+      <input className="p-2 border w-full" placeholder="Assigned To" value={form.assignedTo} onChange={(e) => setForm({ ...form, assignedTo: e.target.value })} />
       <div className="flex gap-4">
         <label>Urgency:</label>
         {["High", "Medium", "Low"].map((u) => (
