@@ -26,11 +26,14 @@ export const complaintsApi = {
 
   async create(complaintData) {
     try {
+      // Transform anonymous to is_anonymous to match the database schema
+      const { anonymous, ...rest } = complaintData;
       const { data, error } = await supabase
         .from('complaints')
         .insert([{
-          ...complaintData,
-          status: 'OPEN',
+          ...rest,
+          is_anonymous: anonymous, // Use the correct column name
+          status: 'open', // Match the enum value in the schema
           created_at: new Date().toISOString()
         }])
         .select()
@@ -47,9 +50,15 @@ export const complaintsApi = {
 
   async update(id, updates) {
     try {
+      // Transform anonymous to is_anonymous if it exists in updates
+      const { anonymous, ...rest } = updates;
+      const updateData = anonymous !== undefined
+        ? { ...rest, is_anonymous: anonymous }
+        : rest;
+
       const { data, error } = await supabase
         .from('complaints')
-        .update(updates)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -70,7 +79,7 @@ export const complaintsApi = {
         .insert([{
           complaint_id: complaintId,
           content: comment.text,
-          author: comment.author,
+          user_id: comment.author, // Match the schema's user_id field
           created_at: new Date().toISOString()
         }])
         .select()
