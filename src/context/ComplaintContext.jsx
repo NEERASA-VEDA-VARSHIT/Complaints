@@ -1,126 +1,80 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { complaintsApi } from '../services/api';
-import { supabase } from '../config/supabase';
-import toast from 'react-hot-toast';
+import { createContext, useContext, useState } from "react";
 
 export const ComplaintContext = createContext();
+
 
 export function useComplaintContext() {
   return useContext(ComplaintContext);
 }
 
+const initialComplaints = [
+  {
+    id: 1,
+    title: "Water leakage in hostel washroom",
+    description: "The washroom in Block C has a consistent water leak from the ceiling.",
+    category: "Hostel Life",
+    department: "Maintenance",
+    status: "OPEN",
+    urgency: "High",
+    daysAgo: 2,
+    anonymous: false,
+    name: "Vikram M",
+    upvotes: 12,
+    likedByMe: false,
+    comments: 3,
+  },
+  {
+    id: 2,
+    title: "No WiFi in 3rd floor classrooms",
+    description: "WiFi is not accessible during lectures in the new building's top floor.",
+    category: "Academics",
+    department: "IT Services",
+    status: "ESCALATED",
+    urgency: "Medium",
+    daysAgo: 8,
+    anonymous: true,
+    name: "",
+    upvotes: 20,
+    likedByMe: false,
+    comments: 5,
+  },
+  {
+    id: 3,
+    title: "Mess food quality is deteriorating",
+    description: "The food being served is not fresh, and there are hygiene concerns.",
+    category: "Hostel Life",
+    department: "Mess Committee",
+    status: "IN PROGRESS",
+    urgency: "High",
+    daysAgo: 5,
+    anonymous: false,
+    name: "Ayesha R",
+    upvotes: 32,
+    likedByMe: false,
+    comments: 10,
+  },
+  {
+    id: 4,
+    title: "Broken benches in seminar hall",
+    description: "Several benches are broken and unusable in Hall B.",
+    category: "Campus Infrastructure",
+    department: "General Admin",
+    status: "RESOLVED",
+    urgency: "Low",
+    daysAgo: 15,
+    anonymous: true,
+    name: "",
+    upvotes: 7,
+    likedByMe: false,
+    comments: 1,
+  },
+];
+
 export function ComplaintProvider({ children }) {
-  const [complaints, setComplaints] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetchComplaints();
-    setupRealtimeSubscription();
-  }, []);
-
-  const fetchComplaints = async () => {
-    try {
-      setLoading(true);
-      const data = await complaintsApi.getAll();
-      setComplaints(data);
-    } catch (err) {
-      setError(err.message);
-      toast.error('Failed to load complaints');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const setupRealtimeSubscription = () => {
-    const subscription = supabase
-      .channel('complaints_channel')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'complaints' 
-      }, payload => {
-        handleRealtimeUpdate(payload);
-      })
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  };
-
-  const handleRealtimeUpdate = (payload) => {
-    const { eventType, new: newRecord, old: oldRecord } = payload;
-
-    switch (eventType) {
-      case 'INSERT':
-        setComplaints(prev => [newRecord, ...prev]);
-        break;
-      case 'UPDATE':
-        setComplaints(prev => 
-          prev.map(complaint => 
-            complaint.id === oldRecord.id ? newRecord : complaint
-          )
-        );
-        break;
-      case 'DELETE':
-        setComplaints(prev => 
-          prev.filter(complaint => complaint.id !== oldRecord.id)
-        );
-        break;
-    }
-  };
-
-  const addComplaint = async (complaintData) => {
-    try {
-      const newComplaint = await complaintsApi.create(complaintData);
-      return newComplaint;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  };
-
-  const updateComplaint = async (id, updates) => {
-    try {
-      const updatedComplaint = await complaintsApi.update(id, updates);
-      return updatedComplaint;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  };
-
-  const addComment = async (complaintId, comment) => {
-    try {
-      const newComment = await complaintsApi.addComment(complaintId, comment);
-      return newComment;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  };
-
-  const toggleUpvote = async (complaintId, userId) => {
-    try {
-      const isUpvoted = await complaintsApi.toggleUpvote(complaintId, userId);
-      return isUpvoted;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  };
+  const [complaints, setComplaints] = useState(initialComplaints);
 
   return (
-    <ComplaintContext.Provider value={{
-      complaints,
-      loading,
-      error,
-      addComplaint,
-      updateComplaint,
-      addComment,
-      toggleUpvote
-    }}>
+    <ComplaintContext.Provider value={{ complaints, setComplaints }}>
       {children}
     </ComplaintContext.Provider>
   );
