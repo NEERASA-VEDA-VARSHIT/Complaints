@@ -1,5 +1,12 @@
-import { supabase, handleSupabaseError } from '../config/supabase';
+import { supabase } from '../config/supabase';
 import toast from 'react-hot-toast';
+
+const handleSupabaseError = (error) => {
+  console.error('Supabase error:', error);
+  const message = error.message || error.error_description || 'An unexpected error occurred';
+  toast.error(message);
+  throw error;
+};
 
 // Complaints API
 export const complaintsApi = {
